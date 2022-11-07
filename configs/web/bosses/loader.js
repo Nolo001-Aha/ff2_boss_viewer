@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", ready);
 
 function ready()
 {
-    info = JSON.parse(httpGet("http://95.172.92.47:27015/bosses/query"));
+    info = JSON.parse(httpGet("http://IP:PORT/bosses/query"));
     var sourceitem = document.getElementById("source");
     var flex = document.getElementById("flexbox");
 
