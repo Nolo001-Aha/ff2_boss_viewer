@@ -10,7 +10,7 @@ in a browser.
 
 **Installation:**
 - Compile and install to respective directories. 
-- Edit loader.js and replace the IP address at line 6 with your gameserver's. Keep port and folders unchanged.
+- Edit loader.js and replace IP and PORT at line 6 with your gameserver's. Keep folders unchanged.
 - Load the plugin or change map.
 
 **Live example:**
