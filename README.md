@@ -18,3 +18,9 @@ Take placeholder.png dimensions as an example to having different image sizes.
 
 **Live example:**
 http://95.172.92.47:27015/bosses/
+
+**Credits**
+- Naydef for general assistance
+- NecGaming for being my personal sandbox, as usual
+- MadeInQuick for providing the placeholder image
+- Respective authors of code pieces that I borrowed (50-DKP team of Official Freak Fortress, ...)
