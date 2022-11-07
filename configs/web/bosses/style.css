@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: space-evenly;
 }
 
 
@@ -10,7 +10,6 @@
   height: fit-content;
   max-width: 400px;
   background-color: #47423c;;
-  margin: 2%;
   border-radius: 15px;
   margin-bottom: 4%;
   word-wrap: break-word;
@@ -74,9 +73,15 @@ box-shadow: 0px 0px 8px 10px rgba(0, 0, 0, 0.47);
 .swal-modal {
   background-color: #3d3b3a;
   border: 3px solid white;
+  font-size: 24px;
   width:fit-content;
   height: fit-content;
   color: #f5e7de;
+}
+
+.swal-content{
+
+  font-size: 25px;
 }
 
 .swal-title{

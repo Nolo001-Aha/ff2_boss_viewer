@@ -169,9 +169,12 @@ void LoadCharacter(const char[] cfg, int count)
 		themeJsonDataObject.SetString("name", section_name);
 		IntToString(i, index, sizeof(index));
 		themeJsonObject.Set(index, themeJsonDataObject);
+		delete themeJsonDataObject;
 	}
 	jsonBossDataObject.Set("themes", themeJsonObject);
 	IntToString(count, index, sizeof(index));
     jsonDataObject.Set(index, jsonBossDataObject);
+	delete themeJsonObject;
+	delete jsonBossDataObject;
 }
 
