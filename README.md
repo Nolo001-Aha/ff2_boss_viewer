@@ -12,5 +12,9 @@ in a browser.
 - Compile and install to respective directories. 
 - Load the plugin or change map.
 
+**Providing boss images:**
+Create .png images of your bosses and upload them to /configs/web/bosses/images.
+Take placeholder.png dimensions as an example to having different image sizes.
+
 **Live example:**
 http://95.172.92.47:27015/bosses/
