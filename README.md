@@ -9,7 +9,9 @@ in a browser.
 - Freak Fortress 2
 
 **Installation:**
-- Compile and install to respective directories. Load the plugin or change map.
+- Compile and install to respective directories. 
+- Edit loader.js and replace the IP address at line 6 with your gameserver's. Keep port and folders unchanged.
+- Load the plugin or change map.
 
 **Live example:**
 http://95.172.92.47:27015/bosses/
