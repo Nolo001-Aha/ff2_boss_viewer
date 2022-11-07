@@ -2,7 +2,7 @@
 A SourceMod plugin designed to neatly list all available Freak Fortress 2 bosses and some of their config data(Descriptions, health, themes...)
 in a browser.
 
-***WIP***
+***WIP, more features and QoL things will be added shortly***
 
 **Requirements:**
 - Webcon & Conplex by asherkin
