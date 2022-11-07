@@ -15,8 +15,9 @@ WebResponse dataResponse;
 
 JSONObject responseObject; //what we send to clients
 JSONObject jsonDataObject; //everything inside "freaks"
-JSONObject jsonBossDataObject; //contains temporary boss info JSON until appended to jsonDataObject
-JSONObject themeJsonObject; //contains final JSON for themes
+
+
+char  placeholder[PLATFORM_MAX_PATH];
 
 public Plugin myinfo = 
 {
@@ -33,6 +34,7 @@ public void OnPluginStart()
 	if (!Web_RegisterRequestHandler("bosses", OnWebRequest, "Freak Fortress: List", "Live Freak Fortress 2 boss list"))
 		SetFailState("Failed to register request handler.");
 
+	processLoaderScript();
 	responseObject = new JSONObject();
 	jsonDataObject = new JSONObject();
 	char path[PLATFORM_MAX_PATH];
@@ -48,8 +50,39 @@ public void OnPluginStart()
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "loader.js");
 	jsResponse = new WebFileResponse(path);
 	jsResponse.AddHeader(WebHeader_ContentType, "text/javascript; charset=UTF-8");
+
+	BuildPath(Path_SM, placeholder, sizeof(placeholder), BASE_PATH ... "images/placeholder.png");
 	processConfigs(0);
 
+}
+
+void processLoaderScript()
+{
+	char path[PLATFORM_MAX_PATH], serverip[64];
+	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "loader.js");
+	File script = OpenFile(path, "r+");
+	int size = FileSize(path, false, "") + 64; //weird behavior, adding 64 more bits so it works as intended
+	char[] contents = new char[size];
+	script.ReadString(contents, size);
+	GetServerIP(serverip, sizeof(serverip));
+	ReplaceString(contents, size, "SERVERIP", serverip, false);
+	script.Seek(0, SEEK_SET);
+	script.WriteString(contents, false);
+	script.Flush();
+	script.Close();
+}
+
+stock void GetServerIP(char[] ip, int length)
+{
+	int hostip = FindConVar("hostip").IntValue;
+
+	Format(ip, length, "%d.%d.%d.%d:%i",
+	(hostip >> 24 & 0xFF),
+	(hostip >> 16 & 0xFF),
+	(hostip >> 8 & 0xFF),
+	(hostip & 0xFF),
+	FindConVar("hostport").IntValue
+	);
 }
 
 public bool OnWebRequest(WebConnection connection, const char[] method, const char[] url)
@@ -77,6 +110,15 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 	if (StrEqual(url, "/")) 
 	{
 		return connection.QueueResponse(WebStatus_OK, indexResponse);
+	}
+	if (StrContains(url, "/images/", false) != -1) 
+	{
+		char buffer[64][4], path[PLATFORM_MAX_PATH];
+		ExplodeString(url, "/", buffer, 4, sizeof(buffer));
+		BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "images/%s", buffer[2]);
+		WebResponse failResponse = new WebFileResponse(path);
+		failResponse.AddHeader(WebHeader_ContentType, "image/png");
+		return connection.QueueResponse(WebStatus_OK, failResponse);
 	}
 
 }
@@ -145,13 +187,13 @@ void LoadCharacter(const char[] cfg, int count)
 	kv.ImportFromFile(config);
 	kv.Rewind();
 	kv.JumpToKey("character");
-	char index[16], buffer[1024];
+	char index[16], buffer[1024], path[PLATFORM_MAX_PATH];
 
-	jsonBossDataObject = new JSONObject();
+	JSONObject jsonBossDataObject = new JSONObject();
 	kv.GetString("name", buffer, sizeof(buffer));
 	jsonBossDataObject.SetString("name", buffer);
-	BuildPath(Path_SM, config, sizeof(config), "configs/web/bosses/images/%s.png", cfg);
-	jsonBossDataObject.SetString("image", FileExists(config) ? cfg : "https://cdn.discordapp.com/attachments/581545730494169100/1038900114867101727/placeholder_2.png"); //placeholder
+	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "images/%s.png", cfg);
+	jsonBossDataObject.SetString("image", FileExists(path) ? cfg : "placeholder"); //placeholder
 	kv.GetString("ragedamage", buffer, sizeof(buffer));
 	jsonBossDataObject.SetString("ragedamage", buffer);
 	kv.GetString("health_formula", buffer, sizeof(buffer));
@@ -163,12 +205,17 @@ void LoadCharacter(const char[] cfg, int count)
 	char section_name[128];
 	kv.GetSectionName(section_name, sizeof(section_name));
 	kv.JumpToKey("sound_bgm");
-	themeJsonObject = new JSONObject();
-	for (int i = 1; i<=10; i++)
+	JSONObject themeJsonObject = new JSONObject();
+	for (int i = 1; ; i++)
 	{
 		JSONObject themeJsonDataObject = new JSONObject();
 		Format(buffer, sizeof(buffer), "artist%i", i);
 		kv.GetString(buffer, section_name, sizeof(section_name), "NOTFOUND");
+		if(strcmp(section_name, "NOTFOUND") == 0)
+		{
+			delete themeJsonDataObject;
+			break;
+		}
 		themeJsonDataObject.SetString("artist", section_name);
 		Format(buffer, sizeof(buffer), "name%i", i);
 		kv.GetString(buffer, section_name, sizeof(section_name), "NOTFOUND");

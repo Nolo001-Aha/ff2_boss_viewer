@@ -1,9 +1,11 @@
+
+const path = "SERVERIP"
 var info;
 document.addEventListener("DOMContentLoaded", ready);
 
 function ready()
 {
-    info = JSON.parse(httpGet("http://95.172.92.47:27015/bosses/query"));
+    info = JSON.parse(httpGet("http://" + path + "/bosses/query"));
     var sourceitem = document.getElementById("source");
     var flex = document.getElementById("flexbox");
 
@@ -11,7 +13,7 @@ function ready()
     {
         var newnode = sourceitem.cloneNode(true);
         newnode.childNodes[1].innerHTML=info.freaks[key].name;
-        newnode.childNodes[3].childNodes[1].src=info.freaks[key].image;
+        newnode.childNodes[3].childNodes[1].src="http://" + path + "/bosses/images/" + info.freaks[key].image + ".png";
         newnode.childNodes[5].childNodes[1].id = key;
         flex.append(newnode);
     }
