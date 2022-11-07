@@ -36,7 +36,6 @@ public void OnPluginStart()
 	responseObject = new JSONObject();
 	jsonDataObject = new JSONObject();
 	char path[PLATFORM_MAX_PATH];
-	Test(0, "test"); //ugly workaround for now until proper release
 	responseObject.Set("freaks", jsonDataObject);
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "index.html");
 	indexResponse = new WebFileResponse(path);
@@ -49,12 +48,14 @@ public void OnPluginStart()
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "loader.js");
 	jsResponse = new WebFileResponse(path);
 	jsResponse.AddHeader(WebHeader_ContentType, "text/javascript; charset=UTF-8");
+	processConfigs(0);
 
 }
 
 public bool OnWebRequest(WebConnection connection, const char[] method, const char[] url)
 {
-	if (StrEqual(url, "/query")) {
+	if (StrEqual(url, "/query")) 
+	{
 		char buffer[512000];
 		responseObject.ToString(buffer, sizeof(buffer));
 		dataResponse = new WebStringResponse(buffer);
@@ -80,7 +81,13 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 
 }
 
-public void Test(int set, char[] buffer) //dont look at me like that. Borrowed from FF2 source
+public Action FF2_OnLoadCharacterSet(int &set, char[] buffer) //dont look at me like that. Borrowed from FF2 source
+{
+	processConfigs(set);
+	return Plugin_Continue;
+}
+
+void processConfigs(int set)
 {
 	int count=0;
 	char config[PLATFORM_MAX_PATH], key[4];
@@ -95,10 +102,9 @@ public void Test(int set, char[] buffer) //dont look at me like that. Borrowed f
 
 	KeyValues Kv=new KeyValues("");
 	FileToKeyValues(Kv, config);
-	int NumOfCharSet=set;
 
 	Kv.Rewind();
-	for(int i; i<NumOfCharSet; i++)
+	for(int i; i<set; i++)
 		Kv.GotoNextKey();
 	
 	if(!new_file_format)
