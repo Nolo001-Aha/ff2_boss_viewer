@@ -7,6 +7,7 @@ in a browser.
 **Requirements:**
 - Webcon & Conplex by asherkin
 - Freak Fortress 2
+- Rest in Pawn
 
 **Installation:**
 - Compile and install to respective directories. 
