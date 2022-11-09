@@ -99,12 +99,12 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 	}
 
 	if (StrEqual(url, "/loader.js"))
-    {
+    	{
 		return connection.QueueResponse(WebStatus_OK, jsResponse);
 	}
 
 	if (StrEqual(url, "/style.css"))
-    {
+   	{
 		return connection.QueueResponse(WebStatus_OK, cssResponse);
 	}
 	if (StrEqual(url, "/")) 
@@ -226,7 +226,7 @@ void LoadCharacter(const char[] cfg, int count)
 	}
 	jsonBossDataObject.Set("themes", themeJsonObject);
 	IntToString(count, index, sizeof(index));
-    jsonDataObject.Set(index, jsonBossDataObject);
+    	jsonDataObject.Set(index, jsonBossDataObject);
 	delete themeJsonObject;
 	delete jsonBossDataObject;
 }
