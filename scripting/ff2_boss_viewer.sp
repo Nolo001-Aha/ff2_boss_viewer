@@ -164,7 +164,7 @@ void processConfigs(int set)
 	}
 	else
 	{
-		Kv.GotoFirstSubKey();
+		Kv.GotoFirstSubKey(false);
 		do
 		{
 			Kv.GetSectionName(config, sizeof(config));
@@ -174,7 +174,7 @@ void processConfigs(int set)
 			LoadCharacter(config, count);
 			count++;
 		}
-		while(Kv.GotoNextKey());
+		while(Kv.GotoNextKey(false));
 		Kv.GoBack();
 	}
 }
