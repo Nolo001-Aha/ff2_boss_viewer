@@ -4,6 +4,19 @@
   justify-content: space-evenly;
 }
 
+.boss_pack_selector {
+  text-align: center;
+  margin-bottom: 2%;
+  color: #d4a05c;
+}
+
+.boss_pack_select {
+  background-color: #34302d;
+  border: none;
+  color: #aaaaaa;
+  font-size: 20px;
+}
+
 .item {
   flex: 0 36%;
   height: fit-content;
