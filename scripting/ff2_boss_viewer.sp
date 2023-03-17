@@ -12,9 +12,8 @@ WebResponse cssResponse;
 WebResponse jsResponse;
 WebResponse dataResponse;
 
-JSONObject responseObject; //what we send to clients
 JSONObject jsonPackObject; //Pack object, will contain jsonFreaksObject
-JSONObject jsonCurrentPackObject;
+JSONObject jsonCurrentPackObject; //temporary object that we use while we're traversing a given pack. gets appended to jsonPackObject later
 
 enum FF2Version {
 	FF2Version_Legacy = 0,
@@ -40,10 +39,6 @@ public void OnPluginStart()
 	if (!Web_RegisterRequestHandler("bosses", OnWebRequest, "Freak Fortress: List", "Live Freak Fortress 2 boss list"))
 		SetFailState("Failed to register request handler.");
 
-	checkFF2Version();
-	processLoaderScript();
-	responseObject = new JSONObject();
-		jsonPackObject = new JSONObject();
 	char path[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "index.html");
 	indexResponse = new WebFileResponse(path);
@@ -142,8 +137,13 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 
 }
 
-public void OnMapStart()
+public void OnAllPluginsLoaded()
 {
+	checkFF2Version();
+	processLoaderScript();
+
+	jsonPackObject = new JSONObject();
+
 	processConfigs();
 }
 
