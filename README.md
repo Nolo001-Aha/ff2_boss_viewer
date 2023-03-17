@@ -30,6 +30,7 @@ If you'd like to host the web front-end somewhere else (like a FastDownloads web
     -            .../bosses/images/*.png
 
 - Change the **ff2list_enable_web** ConVar to 0. Save that ConVar in server.cfg.
+- Manually replace "SERVERIP" with the IP and port of your game server inside loader.js.
 
 **Live example:**
 http://95.172.92.47:27015/bosses/
