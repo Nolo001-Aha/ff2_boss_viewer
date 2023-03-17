@@ -18,7 +18,8 @@ Image filenames must be equal to that of their respective boss, for example hhh_
 
 **Remote file hosting**
 If you'd like to host the web front-end somewhere else (like a FastDownloads web server), please do the following:
-- Move the contents of the "bosses" folder on your game server to your desired location on the web server. Make sure to not forget about images as well. The final result should look something like this:
+- Move the contents of the "bosses" folder on your game server to your desired location on the web server.
+    Make sure to not forget about images as well. The final result should look something like this:
     example.com/...
                 .../bosses/index.html
                 .../bosses/loader.js
