@@ -33,7 +33,7 @@ If you'd like to host the web front-end somewhere else (like a FastDownloads web
 - Manually replace "SERVERIP" with the IP and port of your game server inside loader.js.
 
 **Live example:**
-http://95.172.92.47:27015/bosses/
+http://necserver2.site.nfoservers.com/bosses/
 
 **Credits**
 - Naydef for general assistance
