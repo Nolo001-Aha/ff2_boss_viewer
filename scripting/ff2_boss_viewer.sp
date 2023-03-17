@@ -30,7 +30,7 @@ public Plugin myinfo =
 	name = "Freak Fortress 2: Web List",
 	author = "Nolo001",
 	description = "Lists all bosses and their data from the current character set on a web page",
-	version = "1.0",
+	version = "1.5",
 	url = "https://github.com/Nolo001-Aha/ff2_boss_viewer"
 };
 
