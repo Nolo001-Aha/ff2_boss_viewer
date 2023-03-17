@@ -6,11 +6,6 @@ var sourceBossItem;
 var xhr;
 var imagesOnScrds = true;
 
-window.onerror = function(message, url, lineNumber) {  
-    // code to execute on an error  
-    return true; // prevents browser error messages  
-};
-
 document.addEventListener("DOMContentLoaded", httpGetAsync("http://" + path + "/bosses/query", ready));
 
 function ready() {
