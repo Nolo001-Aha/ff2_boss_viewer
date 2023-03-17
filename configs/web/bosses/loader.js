@@ -6,12 +6,14 @@ var sourceBossItem;
 var xhr;
 document.addEventListener("DOMContentLoaded", httpGetAsync("http://" + path + "/bosses/query", ready));
 
-function ready()
-{
-    if(xhr.readyState != 4) return;
+function ready() {
+    if (xhr.readyState != 4) return;
     info = JSON.parse(xhr.responseText);
     var sourcePackItem = document.getElementById("bossPackOptionSource");
     var bossPackSelect = document.getElementById("bossPackSelector");
+    bossPackSelect.addEventListener('change', function () {
+        updateBossList();
+    });
     sourceBossItem = document.getElementById("source");
 
     for (var key in info) {
@@ -19,35 +21,32 @@ function ready()
         newnode.innerHTML = info[key].packName;
         newnode.value = key;
         bossPackSelect.append(newnode);
-    }   
+    }
     sourcePackItem.remove();
 
     displayFreaks(selectedPack);
 }
 
 
-function httpGet(theUrl)
-{
+function httpGet(theUrl) {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false);
-    xmlHttp.send( null );
+    xmlHttp.open("GET", theUrl, false);
+    xmlHttp.send(null);
     return xmlHttp.responseText;
 }
 
 
-function httpGetAsync(theUrl, callback)
-{
+function httpGetAsync(theUrl, callback) {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, true);
+    xmlHttp.open("GET", theUrl, true);
     xmlHttp.onload = callback;
     xmlHttp.send(null);
     xhr = xmlHttp;
 }
 
-function updateBossList()
-{
+function updateBossList() {
     var bossPackSelected = document.getElementById("bossPackSelector").value;
-    if(selectedPack == bossPackSelected)
+    if (selectedPack == bossPackSelected)
         return;
     var flex = document.getElementById("flexbox");
     removeAllChildNodes(flex)
@@ -61,11 +60,10 @@ function removeAllChildNodes(parent) {
     }
 }
 
-function displayFreaks(packId)
-{
+function displayFreaks(packId) {
     var flex = document.getElementById("flexbox");
     for (var key in info[packId]) {
-        if(key === "packName") //this is ugly.
+        if (key === "packName") //this is ugly.
             continue;
         var newnode = sourceBossItem.cloneNode(true);
         newnode.childNodes[1].innerHTML = info[packId][key].name;
@@ -78,8 +76,7 @@ function displayFreaks(packId)
 }
 
 
-function showModalDialog(boxid)
-{
+function showModalDialog(boxid) {
     var wrapper = document.createElement('div');
     var health = document.createElement('p');
     var ragedamage = document.createElement('p');
@@ -93,9 +90,8 @@ function showModalDialog(boxid)
     table.style = 'width:100%; height:100%;display:none';
 
 
-    for (key in info[selectedPack][boxid].themes)
-    {
-        if(info[selectedPack][boxid].themes[key].artist == "NOTFOUND")
+    for (key in info[selectedPack][boxid].themes) {
+        if (info[selectedPack][boxid].themes[key].artist == "NOTFOUND")
             continue;
         var themedata = document.createElement('p');
         themedata.innerHTML = "Theme " + key + "<br/>Artist: " + info[selectedPack][boxid].themes[key].artist + "<br/>Name: " + info[selectedPack][boxid].themes[key].name;
@@ -110,9 +106,8 @@ function showModalDialog(boxid)
     <th>Δ</th>
     </tr>`;
     var old = 0;
-    for (var i = 1; i <= 27; i++)
-    {
-        var scope = { n : i,  x : i};
+    for (var i = 1; i <= 27; i++) {
+        var scope = { n: i, x: i };
         var answer = Math.round(math.eval(info[selectedPack][boxid].health_formula, scope));
         var delta = (answer - old);
 
@@ -125,11 +120,11 @@ function showModalDialog(boxid)
         old = answer;
     }
 
-    health.innerHTML= "Health: `" + info[selectedPack][boxid].health_formula + "`";
+    health.innerHTML = "Health: `" + info[selectedPack][boxid].health_formula + "`";
     //MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    ragedamage.innerHTML= "Damage to Rage: " + info[selectedPack][boxid].ragedamage;
-    lives.innerHTML= info[selectedPack][boxid].lives != "" ? "Lives: " + info[selectedPack][boxid].lives : "Lives: 1";
-    description.innerHTML=info[selectedPack][boxid].description.replaceAll("\\n", "<br/>");
+    ragedamage.innerHTML = "Damage to Rage: " + info[selectedPack][boxid].ragedamage;
+    lives.innerHTML = info[selectedPack][boxid].lives != "" ? "Lives: " + info[selectedPack][boxid].lives : "Lives: 1";
+    description.innerHTML = info[selectedPack][boxid].description.replaceAll("\\n", "<br/>");
     wrapper.appendChild(ragedamage);
     wrapper.appendChild(health);
     wrapper.appendChild(lives);
@@ -137,17 +132,16 @@ function showModalDialog(boxid)
     wrapper.appendChild(themes);
     wrapper.appendChild(table);
     swal({
-      title: info[selectedPack][boxid].name,
-      content: wrapper,
-      buttons: false
+        title: info[selectedPack][boxid].name,
+        content: wrapper,
+        buttons: false
     });
 
     MathJax.typesetPromise()
 }
 
 
-function showCredits()
-{
+function showCredits() {
     var creditsdiv = document.createElement('div');
     var bywho = document.createElement('a');
     bywho.innerHTML = "Made with ♟💓♟ by Nolo001 (GitHub)";
@@ -161,5 +155,5 @@ function showCredits()
         title: "Credits",
         content: creditsdiv
 
-      });
+    });
 }

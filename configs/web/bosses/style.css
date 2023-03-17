@@ -18,14 +18,6 @@
   display: inline-block;
 }
 
-.boss_pack_confirm_button {
-  background-color: #34302d;
-  border: none;
-  color: #cfcfcf;
-  text-align: center;
-  text-decoration: none;
-}
-
 .bossPackOption {
   text-align: center;
 }
