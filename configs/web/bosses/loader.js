@@ -1,12 +1,15 @@
 
-const path = "SERVERIP"
+const path = "95.172.92.47:27015"
 var info;
 var selectedPack = 0;
 var sourceBossItem;
-info = JSON.parse(httpGet("http://" + path + "/bosses/query"));
-document.addEventListener("DOMContentLoaded", ready);
+var xhr;
+document.addEventListener("DOMContentLoaded", httpGetAsync("http://" + path + "/bosses/query", ready));
 
-function ready() {
+function ready()
+{
+    if(xhr.readyState != 4) return;
+    info = JSON.parse(xhr.responseText);
     var sourcePackItem = document.getElementById("bossPackOptionSource");
     var bossPackSelect = document.getElementById("bossPackSelector");
     sourceBossItem = document.getElementById("source");
@@ -20,7 +23,25 @@ function ready() {
     sourcePackItem.remove();
 
     displayFreaks(selectedPack);
+}
 
+
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false);
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
+
+function httpGetAsync(theUrl, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, true);
+    xmlHttp.onload = callback;
+    xmlHttp.send(null);
+    xhr = xmlHttp;
 }
 
 function updateBossList()
@@ -36,7 +57,6 @@ function updateBossList()
 
 function removeAllChildNodes(parent) {
     while (parent.firstChild) {
-        console.log(parent.firstChild.id)
         parent.removeChild(parent.firstChild);
     }
 }
@@ -45,6 +65,8 @@ function displayFreaks(packId)
 {
     var flex = document.getElementById("flexbox");
     for (var key in info[packId]) {
+        if(key === "packName") //this is ugly.
+            continue;
         var newnode = sourceBossItem.cloneNode(true);
         newnode.childNodes[1].innerHTML = info[packId][key].name;
         newnode.childNodes[3].childNodes[1].src = "http://" + path + "/bosses/images/" + info[packId][key].image + ".png";
@@ -55,45 +77,77 @@ function displayFreaks(packId)
     sourceBossItem.hidden = true;
 }
 
-function httpGet(theUrl) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", theUrl, false);
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
-}
 
-function showModalDialog(boxid) {
+function showModalDialog(boxid)
+{
     var wrapper = document.createElement('div');
     var health = document.createElement('p');
     var ragedamage = document.createElement('p');
     var lives = document.createElement('p');
     var description = document.createElement('p');
     var themes = document.createElement('div');
-    for (key in info[selectedPack][boxid].themes) {
-        if (info[selectedPack][boxid].themes[key].artist == "NOTFOUND")
+
+    var table = document.createElement('table');
+    table.id = "health-table";
+    table.setAttribute('title', 'N.B.: The data shown are per life');
+    table.style = 'width:100%; height:100%;display:none';
+
+
+    for (key in info[selectedPack][boxid].themes)
+    {
+        if(info[selectedPack][boxid].themes[key].artist == "NOTFOUND")
             continue;
         var themedata = document.createElement('p');
         themedata.innerHTML = "Theme " + key + "<br/>Artist: " + info[selectedPack][boxid].themes[key].artist + "<br/>Name: " + info[selectedPack][boxid].themes[key].name;
         themes.appendChild(themedata);
 
     }
-    health.innerHTML = "Health: " + info[selectedPack][boxid].health_formula;
-    ragedamage.innerHTML = "Damage to Rage: " + info[selectedPack][boxid].ragedamage;
-    lives.innerHTML = info[selectedPack][boxid].lives != "" ? "Lives: " + info[selectedPack][boxid].lives : "Lives: 1";
-    description.innerHTML = info[selectedPack][boxid].description.replaceAll("\\n", "<br/>");
+
+    table.innerHTML += `
+    <tr>
+    <th>Player count</th>
+    <th>Health</th>
+    <th>Δ</th>
+    </tr>`;
+    var old = 0;
+    for (var i = 1; i <= 27; i++)
+    {
+        var scope = { n : i,  x : i};
+        var answer = Math.round(math.eval(info[selectedPack][boxid].health_formula, scope));
+        var delta = (answer - old);
+
+        table.innerHTML += `
+        <tr>
+        <td>` + i + `</td>
+        <td>` + answer.toLocaleString() + `</td>
+        <td>` + delta.toLocaleString() + `</td>
+        </tr>`;
+        old = answer;
+    }
+
+    health.innerHTML= "Health: `" + info[selectedPack][boxid].health_formula + "`";
+    //MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    ragedamage.innerHTML= "Damage to Rage: " + info[selectedPack][boxid].ragedamage;
+    lives.innerHTML= info[selectedPack][boxid].lives != "" ? "Lives: " + info[selectedPack][boxid].lives : "Lives: 1";
+    description.innerHTML=info[selectedPack][boxid].description.replaceAll("\\n", "<br/>");
     wrapper.appendChild(ragedamage);
     wrapper.appendChild(health);
     wrapper.appendChild(lives);
     wrapper.appendChild(description);
     wrapper.appendChild(themes);
+    wrapper.appendChild(table);
     swal({
-        title: info[selectedPack][boxid].name,
-        content: wrapper,
-        buttons: false
+      title: info[selectedPack][boxid].name,
+      content: wrapper,
+      buttons: false
     });
+
+    MathJax.typesetPromise()
 }
 
-function showCredits() {
+
+function showCredits()
+{
     var creditsdiv = document.createElement('div');
     var bywho = document.createElement('a');
     bywho.innerHTML = "Made with ♟💓♟ by Nolo001 (GitHub)";
@@ -107,5 +161,5 @@ function showCredits() {
         title: "Credits",
         content: creditsdiv
 
-    });
+      });
 }
