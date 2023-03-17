@@ -134,7 +134,7 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 		failResponse.AddHeader(WebHeader_ContentType, "image/png");
 		return connection.QueueResponse(WebStatus_OK, failResponse);
 	}
-
+	return false;
 }
 
 public void OnAllPluginsLoaded()
@@ -241,7 +241,7 @@ void LoadCharacter(const char[] cfg, int count)
 	}
 	jsonBossDataObject.Set("themes", themeJsonObject);
 	IntToString(count, index, sizeof(index));
-    jsonCurrentPackObject.Set(index, jsonBossDataObject);
+    	jsonCurrentPackObject.Set(index, jsonBossDataObject);
 	delete themeJsonObject;
 	delete jsonBossDataObject;
 }
