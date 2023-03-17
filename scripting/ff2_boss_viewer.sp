@@ -15,6 +15,9 @@ WebResponse dataResponse;
 JSONObject jsonPackObject; //Pack object, will contain jsonFreaksObject
 JSONObject jsonCurrentPackObject; //temporary object that we use while we're traversing a given pack. gets appended to jsonPackObject later
 
+ConVar ff2ListShouldServeWeb;
+bool shouldServeWeb = true;
+
 enum FF2Version {
 	FF2Version_Legacy = 0,
 	FF2Version_Rewrite = 1
@@ -54,6 +57,28 @@ public void OnPluginStart()
 
 	BuildPath(Path_SM, placeholder, sizeof(placeholder), BASE_PATH ... "images/placeholder.png");
 
+	ff2ListShouldServeWeb = CreateConVar("ff2list_enable_web", "1.0", "Should Freak Fortress: List serve it's web content through Webcon?", _, true, 0.0, true, 1.0);
+	ff2ListShouldServeWeb.AddChangeHook(OnConVarChanged);
+	shouldServeWeb = ff2ListShouldServeWeb.BoolValue;
+}
+
+public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	float value = StringToFloat(newValue);
+	if(view_as<int>(value) == 1)
+	{
+		shouldServeWeb = true;
+		jsonPackObject.SetBool("serveImagesFromScrds", true);
+		return;
+	}
+	if(view_as<int>(value) == 0)
+	{
+		shouldServeWeb = false;
+		jsonPackObject.SetBool("serveImagesFromScrds", false);
+		return;
+	}
+	shouldServeWeb = true;
+	return;
 }
 
 void checkFF2Version()
@@ -112,20 +137,20 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 		return connection.QueueResponse(WebStatus_OK, dataResponse);
 	}
 
-	if (StrEqual(url, "/loader.js"))
+	if (shouldServeWeb && StrEqual(url, "/loader.js"))
     	{
 		return connection.QueueResponse(WebStatus_OK, jsResponse);
 	}
 
-	if (StrEqual(url, "/style.css"))
+	if (shouldServeWeb && StrEqual(url, "/style.css"))
    	{
 		return connection.QueueResponse(WebStatus_OK, cssResponse);
 	}
-	if (StrEqual(url, "/")) 
+	if (shouldServeWeb && StrEqual(url, "/")) 
 	{
 		return connection.QueueResponse(WebStatus_OK, indexResponse);
 	}
-	if (StrContains(url, "/images/", false) != -1) 
+	if (shouldServeWeb && StrContains(url, "/images/", false) != -1)
 	{
 		char buffer[64][4], path[PLATFORM_MAX_PATH];
 		ExplodeString(url, "/", buffer, 4, sizeof(buffer));
@@ -143,6 +168,7 @@ public void OnAllPluginsLoaded()
 	processLoaderScript();
 
 	jsonPackObject = new JSONObject();
+	jsonPackObject.SetBool("serveImagesFromScrds", shouldServeWeb);
 
 	processConfigs();
 }
@@ -208,7 +234,10 @@ void LoadCharacter(const char[] cfg, int count)
 	kv.GetString("name", buffer, sizeof(buffer));
 	jsonBossDataObject.SetString("name", buffer);
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "images/%s.png", cfg);
-	jsonBossDataObject.SetString("image", FileExists(path) ? cfg : "placeholder"); //placeholder
+	jsonBossDataObject.SetString("image", shouldServeWeb ? 
+															FileExists(path) ? cfg : "placeholder" //if we need to serve files, have a failsafe check
+															:
+															cfg); //if files should be grabbed from another web server, give the JS loader actual cfg name
 	kv.GetString("ragedamage", buffer, sizeof(buffer));
 	jsonBossDataObject.SetString("ragedamage", buffer);
 	kv.GetString("health_formula", buffer, sizeof(buffer));

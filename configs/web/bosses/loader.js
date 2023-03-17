@@ -4,6 +4,13 @@ var info;
 var selectedPack = 0;
 var sourceBossItem;
 var xhr;
+var imagesOnScrds = true;
+
+window.onerror = function(message, url, lineNumber) {  
+    // code to execute on an error  
+    return true; // prevents browser error messages  
+};
+
 document.addEventListener("DOMContentLoaded", httpGetAsync("http://" + path + "/bosses/query", ready));
 
 function ready() {
@@ -16,7 +23,12 @@ function ready() {
     });
     sourceBossItem = document.getElementById("source");
 
+    imagesOnScrds = info['serveImagesFromScrds'];
+
     for (var key in info) {
+        if(key === "serveImagesFromScrds")
+            continue; //ugly.
+
         var newnode = sourcePackItem.cloneNode(true);
         newnode.innerHTML = info[key].packName;
         newnode.value = key;
@@ -26,15 +38,6 @@ function ready() {
 
     displayFreaks(selectedPack);
 }
-
-
-function httpGet(theUrl) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", theUrl, false);
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
-}
-
 
 function httpGetAsync(theUrl, callback) {
     var xmlHttp = new XMLHttpRequest();
@@ -67,7 +70,17 @@ function displayFreaks(packId) {
             continue;
         var newnode = sourceBossItem.cloneNode(true);
         newnode.childNodes[1].innerHTML = info[packId][key].name;
-        newnode.childNodes[3].childNodes[1].src = "http://" + path + "/bosses/images/" + info[packId][key].image + ".png";
+        newnode.childNodes[3].childNodes[1].src = 
+                                                   imagesOnScrds === true ? 
+                                                                        "http://" + 
+                                                                        path + 
+                                                                        "/bosses/images/" + 
+                                                                        info[packId][key].image + 
+                                                                        ".png"
+                                                                        :
+                                                                        "images/" +
+                                                                        info[packId][key].image + 
+                                                                        ".png";
         newnode.childNodes[5].childNodes[1].id = key;
         newnode.hidden = false;
         flex.append(newnode);
