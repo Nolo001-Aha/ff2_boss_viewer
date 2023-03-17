@@ -12,14 +12,14 @@
     <a style="color: white; font-size:15px; text-align: left;" onclick="showCredits()">Credits</a>
 
     <div class="upper_description">
-        <h1>Freak Fortress 2: List</h1>
+        <h1>Freak Fortress 2: List v. 2.0</h1>
         <h3>This website shows live Freak Fortress boss data such as descriptions, health, and more!</h3>
     </div>
 
     <div class="boss_pack_selector">
         <h3>Available boss packs:</h3>
-        <select class="boss_pack_select">
-            <option>Freak Fortress Pack 1</option>
+        <select class="boss_pack_select" id="bossPackSelector">
+            <option id="bossPackOptionSource" class="bossPackOption">Freak Fortress Pack 1</option>
         </select>
         <button class="boss_pack_confirm_button" onclick="updateBossList()">Update List ↻</button>
 

@@ -26,6 +26,10 @@
   text-decoration: none;
 }
 
+.bossPackOption {
+  text-align: center;
+}
+
 .item {
   flex: 0 36%;
   height: fit-content;

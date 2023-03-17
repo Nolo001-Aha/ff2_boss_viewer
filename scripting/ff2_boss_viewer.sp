@@ -1,6 +1,5 @@
 #include <sourcemod>
 #include <webcon>
-#include <freak_fortress_2>
 #include <ripext>
 
 #pragma semicolon 1
@@ -14,8 +13,15 @@ WebResponse jsResponse;
 WebResponse dataResponse;
 
 JSONObject responseObject; //what we send to clients
-JSONObject jsonDataObject; //everything inside "freaks"
+JSONObject jsonPackObject; //Pack object, will contain jsonFreaksObject
+JSONObject jsonCurrentPackObject;
 
+enum FF2Version {
+	FF2Version_Legacy = 0,
+	FF2Version_Rewrite = 1
+}
+
+FF2Version ff2Version = FF2Version_Legacy;
 
 char  placeholder[PLATFORM_MAX_PATH];
 
@@ -34,11 +40,11 @@ public void OnPluginStart()
 	if (!Web_RegisterRequestHandler("bosses", OnWebRequest, "Freak Fortress: List", "Live Freak Fortress 2 boss list"))
 		SetFailState("Failed to register request handler.");
 
+	checkFF2Version();
 	processLoaderScript();
 	responseObject = new JSONObject();
-	jsonDataObject = new JSONObject();
+		jsonPackObject = new JSONObject();
 	char path[PLATFORM_MAX_PATH];
-	responseObject.Set("freaks", jsonDataObject);
 	BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "index.html");
 	indexResponse = new WebFileResponse(path);
 	indexResponse.AddHeader(WebHeader_ContentType, "text/html; charset=UTF-8");
@@ -52,8 +58,21 @@ public void OnPluginStart()
 	jsResponse.AddHeader(WebHeader_ContentType, "text/javascript; charset=UTF-8");
 
 	BuildPath(Path_SM, placeholder, sizeof(placeholder), BASE_PATH ... "images/placeholder.png");
-	processConfigs(0);
 
+}
+
+void checkFF2Version()
+{
+	if(LibraryExists("freak_fortress_2"))
+	{
+		ff2Version = FF2Version_Legacy; //we're running legacy FF2
+		if(LibraryExists("ff2r")) //FF2R registers both libraries for backwards compatibility, also check if ff2r is loaded
+			ff2Version = FF2Version_Rewrite;			
+
+		PrintToServer("FF2 Version is %i", ff2Version);
+		return;
+	}
+	SetFailState("Unable to determine FF2 version (Legacy or Rewrite). Is FF2 loaded?"); //only fires if none of the libraries are available
 }
 
 void processLoaderScript()
@@ -90,9 +109,9 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 	if (StrEqual(url, "/query")) 
 	{
 		char buffer[512000];
-		responseObject.ToString(buffer, sizeof(buffer));
+		jsonPackObject.ToString(buffer, sizeof(buffer));
 		dataResponse = new WebStringResponse(buffer);
-		dataResponse.AddHeader(WebHeader_ContentType, "application/json");
+		dataResponse.AddHeader(WebHeader_ContentType, "application/json; charset=utf-8");
 		dataResponse.AddHeader(WebHeader_CacheControl, "public, max-age=5");
 		dataResponse.AddHeader(WebHeader_AccessControlAllowOrigin, "*");
 		return connection.QueueResponse(WebStatus_OK, dataResponse);
@@ -123,60 +142,56 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 
 }
 
-public Action FF2_OnLoadCharacterSet(int &set, char[] buffer) //dont look at me like that. Borrowed from FF2 source
+public void OnMapStart()
 {
-	processConfigs(set);
-	return Plugin_Continue;
+	processConfigs();
 }
 
-void processConfigs(int set)
+void processConfigs()
 {
-	int count=0;
-	char config[PLATFORM_MAX_PATH], key[4];
-	bool new_file_format=true;
+	int packCount = 0;
+	char config[PLATFORM_MAX_PATH], packName[PLATFORM_MAX_PATH];
+
+
 	BuildPath(Path_SM, config, sizeof(config), "data/freak_fortress_2/characters.cfg");
 
-	if(!FileExists(config))
-	{
-		BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
-		new_file_format=false;
-	}
-
-	KeyValues Kv=new KeyValues("");
-	FileToKeyValues(Kv, config);
+	KeyValues Kv=new KeyValues("Keys");
+	Kv.ImportFromFile(config);
 
 	Kv.Rewind();
-	for(int i; i<set; i++)
-		Kv.GotoNextKey();
-	
-	if(!new_file_format)
+	do
 	{
-		for(int i=1; i<128; i++)
-		{
-			IntToString(i, key, sizeof(key));
-			Kv.GetString(key, config, PLATFORM_MAX_PATH);
-			if(!config[0])
-				break;
+		int configCount = 0;
+		Kv.GetSectionName(packName, sizeof(packName));
+		if(!packName[0])
+			break;
 
-			LoadCharacter(config, count);
-			count++;
-		}
-	}
-	else
-	{
-		Kv.GotoFirstSubKey();
+		jsonCurrentPackObject = new JSONObject();
+
+		jsonCurrentPackObject.SetString("packName", packName);
+
+		Kv.GotoFirstSubKey(ff2Version == FF2Version_Legacy ? true : false);
 		do
 		{
 			Kv.GetSectionName(config, sizeof(config));
 			if(!config[0])
-				break;
+				break;	
 
-			LoadCharacter(config, count);
-			count++;
+			LoadCharacter(config, configCount);
+			configCount++;
+
+
 		}
-		while(Kv.GotoNextKey());
+		while(Kv.GotoNextKey(ff2Version == FF2Version_Legacy ? true : false));
+
 		Kv.GoBack();
+		char key[4];
+		IntToString(packCount, key, sizeof(key));
+		jsonPackObject.Set(key, jsonCurrentPackObject);
+		packCount++;	
+		
 	}
+	while(Kv.GotoNextKey());
 }
 
 void LoadCharacter(const char[] cfg, int count)
@@ -226,7 +241,7 @@ void LoadCharacter(const char[] cfg, int count)
 	}
 	jsonBossDataObject.Set("themes", themeJsonObject);
 	IntToString(count, index, sizeof(index));
-    	jsonDataObject.Set(index, jsonBossDataObject);
+    jsonCurrentPackObject.Set(index, jsonBossDataObject);
 	delete themeJsonObject;
 	delete jsonBossDataObject;
 }

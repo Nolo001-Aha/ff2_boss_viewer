@@ -1,21 +1,58 @@
 
 const path = "SERVERIP"
 var info;
+var selectedPack = 0;
+var sourceBossItem;
+info = JSON.parse(httpGet("http://" + path + "/bosses/query"));
 document.addEventListener("DOMContentLoaded", ready);
 
 function ready() {
-    info = JSON.parse(httpGet("http://" + path + "/bosses/query"));
-    var sourceitem = document.getElementById("source");
-    var flex = document.getElementById("flexbox");
+    var sourcePackItem = document.getElementById("bossPackOptionSource");
+    var bossPackSelect = document.getElementById("bossPackSelector");
+    sourceBossItem = document.getElementById("source");
 
-    for (var key in info.freaks) {
-        var newnode = sourceitem.cloneNode(true);
-        newnode.childNodes[1].innerHTML = info.freaks[key].name;
-        newnode.childNodes[3].childNodes[1].src = "http://" + path + "/bosses/images/" + info.freaks[key].image + ".png";
+    for (var key in info) {
+        var newnode = sourcePackItem.cloneNode(true);
+        newnode.innerHTML = info[key].packName;
+        newnode.value = key;
+        bossPackSelect.append(newnode);
+    }   
+    sourcePackItem.remove();
+
+    displayFreaks(selectedPack);
+
+}
+
+function updateBossList()
+{
+    var bossPackSelected = document.getElementById("bossPackSelector").value;
+    if(selectedPack == bossPackSelected)
+        return;
+    var flex = document.getElementById("flexbox");
+    removeAllChildNodes(flex)
+    selectedPack = bossPackSelected
+    displayFreaks(bossPackSelected)
+}
+
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        console.log(parent.firstChild.id)
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+function displayFreaks(packId)
+{
+    var flex = document.getElementById("flexbox");
+    for (var key in info[packId]) {
+        var newnode = sourceBossItem.cloneNode(true);
+        newnode.childNodes[1].innerHTML = info[packId][key].name;
+        newnode.childNodes[3].childNodes[1].src = "http://" + path + "/bosses/images/" + info[packId][key].image + ".png";
         newnode.childNodes[5].childNodes[1].id = key;
+        newnode.hidden = false;
         flex.append(newnode);
     }
-    sourceitem.remove();
+    sourceBossItem.hidden = true;
 }
 
 function httpGet(theUrl) {
@@ -32,25 +69,25 @@ function showModalDialog(boxid) {
     var lives = document.createElement('p');
     var description = document.createElement('p');
     var themes = document.createElement('div');
-    for (key in info.freaks[boxid].themes) {
-        if (info.freaks[boxid].themes[key].artist == "NOTFOUND")
+    for (key in info[selectedPack][boxid].themes) {
+        if (info[selectedPack][boxid].themes[key].artist == "NOTFOUND")
             continue;
         var themedata = document.createElement('p');
-        themedata.innerHTML = "Theme " + key + "<br/>Artist: " + info.freaks[boxid].themes[key].artist + "<br/>Name: " + info.freaks[boxid].themes[key].name;
+        themedata.innerHTML = "Theme " + key + "<br/>Artist: " + info[selectedPack][boxid].themes[key].artist + "<br/>Name: " + info[selectedPack][boxid].themes[key].name;
         themes.appendChild(themedata);
 
     }
-    health.innerHTML = "Health: " + info.freaks[boxid].health_formula;
-    ragedamage.innerHTML = "Damage to Rage: " + info.freaks[boxid].ragedamage;
-    lives.innerHTML = info.freaks[boxid].lives != "" ? "Lives: " + info.freaks[boxid].lives : "Lives: 1";
-    description.innerHTML = info.freaks[boxid].description.replaceAll("\\n", "<br/>");
+    health.innerHTML = "Health: " + info[selectedPack][boxid].health_formula;
+    ragedamage.innerHTML = "Damage to Rage: " + info[selectedPack][boxid].ragedamage;
+    lives.innerHTML = info[selectedPack][boxid].lives != "" ? "Lives: " + info[selectedPack][boxid].lives : "Lives: 1";
+    description.innerHTML = info[selectedPack][boxid].description.replaceAll("\\n", "<br/>");
     wrapper.appendChild(ragedamage);
     wrapper.appendChild(health);
     wrapper.appendChild(lives);
     wrapper.appendChild(description);
     wrapper.appendChild(themes);
     swal({
-        title: info.freaks[boxid].name,
+        title: info[selectedPack][boxid].name,
         content: wrapper,
         buttons: false
     });
