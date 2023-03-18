@@ -1,5 +1,5 @@
 
-const path = "SERVERIP"
+const path = "95.172.92.47:27015"
 var info;
 var selectedPack = 0;
 var sourceBossItem;
@@ -65,16 +65,22 @@ function displayFreaks(packId) {
             continue;
         var newnode = sourceBossItem.cloneNode(true);
         newnode.childNodes[1].innerHTML = info[packId][key].name;
+        var imageName = info[packId][key].image;
+        if(imageName.includes("/"))
+        {
+            var imagePathArray = imageName.split("/");
+            imageName = imagePathArray[imagePathArray.length-1];
+        }
         newnode.childNodes[3].childNodes[1].src = 
                                                    imagesOnScrds === true ? 
                                                                         "http://" + 
                                                                         path + 
                                                                         "/bosses/images/" + 
-                                                                        info[packId][key].image + 
+                                                                        imageName + 
                                                                         ".png"
                                                                         :
                                                                         "images/" +
-                                                                        info[packId][key].image + 
+                                                                        imageName + 
                                                                         ".png";
         newnode.childNodes[5].childNodes[1].id = key;
         newnode.hidden = false;

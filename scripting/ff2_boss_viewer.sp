@@ -11,6 +11,7 @@ WebResponse indexResponse;
 WebResponse cssResponse;
 WebResponse jsResponse;
 WebResponse dataResponse;
+WebResponse failResponse;
 
 JSONObject jsonPackObject; //Pack object, will contain jsonFreaksObject
 JSONObject jsonCurrentPackObject; //temporary object that we use while we're traversing a given pack. gets appended to jsonPackObject later
@@ -155,11 +156,12 @@ public bool OnWebRequest(WebConnection connection, const char[] method, const ch
 		char buffer[64][4], path[PLATFORM_MAX_PATH];
 		ExplodeString(url, "/", buffer, 4, sizeof(buffer));
 		BuildPath(Path_SM, path, sizeof(path), BASE_PATH ... "images/%s", buffer[2]);
-		WebResponse failResponse = new WebFileResponse(path);
+		failResponse = new WebFileResponse(path);
 		failResponse.AddHeader(WebHeader_ContentType, "image/png");
 		return connection.QueueResponse(WebStatus_OK, failResponse);
 	}
-	return false;
+	failResponse = new WebStringResponse("Forbidden");
+	return connection.QueueResponse(WebStatus_Forbidden, failResponse);
 }
 
 public void OnAllPluginsLoaded()
