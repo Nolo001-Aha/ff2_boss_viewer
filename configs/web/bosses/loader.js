@@ -1,5 +1,5 @@
 
-const path = "95.172.92.47:27015"
+const path = "SERVERIP"
 var info;
 var selectedPack = 0;
 var sourceBossItem;
